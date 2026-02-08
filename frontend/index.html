@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini E-Commerce</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+
+    /* Header */
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    header h1 { font-size: 1.4rem; }
+
+    #user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #user-info span { font-size: 0.9rem; opacity: 0.9; }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: opacity 0.2s;
+    }
+
+    button:hover { opacity: 0.85; }
+
+    .btn-primary { background: #e94560; color: white; }
+    .btn-secondary { background: #16213e; color: white; }
+    .btn-small { padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+
+    /* Navigation */
+    nav {
+      background: #16213e;
+      padding: 0.5rem 2rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    nav button {
+      background: transparent;
+      color: #ccc;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+    }
+
+    nav button:hover, nav button.active {
+      color: white;
+      border-color: #e94560;
+    }
+
+    /* Main content */
+    main {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* Cards */
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card h2 { margin-bottom: 1rem; color: #1a1a2e; }
+
+    /* Login form */
+    .login-container {
+      max-width: 400px;
+      margin: 4rem auto;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #e94560;
+    }
+
+    /* Products grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .product-card:hover { transform: translateY(-2px); }
+
+    .product-card .product-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      color: #aaa;
+    }
+
+    .product-card .product-body {
+      padding: 1rem;
+    }
+
+    .product-card h3 { font-size: 1.1rem; margin-bottom: 0.3rem; }
+    .product-card .description { color: #666; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .product-card .price { font-size: 1.2rem; font-weight: 700; color: #e94560; }
+    .product-card .category { font-size: 0.75rem; background: #e8e8e8; padding: 0.2rem 0.5rem; border-radius: 12px; display: inline-block; margin-bottom: 0.5rem; }
+
+    .stock-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .stock-ok { background: #d4edda; color: #155724; }
+    .stock-low { background: #fff3cd; color: #856404; }
+    .stock-out { background: #f8d7da; color: #721c24; }
+
+    /* Profile */
+    .profile-field {
+      display: flex;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .profile-field:last-child { border: none; }
+    .profile-field .label { font-weight: 600; width: 120px; color: #555; }
+    .profile-field .value { flex: 1; }
+
+    /* Status/alerts */
+    .alert {
+      padding: 0.8rem 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+    /* Service status */
+    .service-status {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .service-status .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ccc;
+    }
+
+    .status-dot.healthy { background: #28a745; }
+    .status-dot.unhealthy { background: #dc3545; }
+
+    /* Loading */
+    .loading { text-align: center; padding: 2rem; color: #666; }
+
+    /* Test users hint */
+    .hint {
+      background: #e8f4fd;
+      border: 1px solid #b8daff;
+      border-radius: 4px;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+      color: #004085;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Mini E-Commerce</h1>
+    <div id="user-info">
+      <span id="user-display"></span>
+      <button id="logout-btn" class="btn-primary" style="display:none" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <nav id="main-nav" style="display:none">
+    <button class="active" onclick="showSection('products', this)">Products</button>
+    <button onclick="showSection('profile', this)">My Profile</button>
+    <button onclick="showSection('status', this)">Service Status</button>
+  </nav>
+
+  <main>
+    <!-- Login Section -->
+    <div id="section-login" class="section active">
+      <div class="login-container">
+        <div class="card">
+          <h2>Login</h2>
+          <div class="hint">
+            <strong>Test accounts:</strong><br>
+            alice / password123 (admin)<br>
+            bob / password456 (user)<br>
+            charlie / password789 (user)
+          </div>
+          <div id="login-error"></div>
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter username" value="alice">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter password" value="password123">
+          </div>
+          <button class="btn-primary" onclick="login()" style="width:100%; padding: 0.7rem;">Login</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Section -->
+    <div id="section-products" class="section">
+      <div class="card" id="admin-panel" style="display:none">
+        <h2>Add Product (Admin)</h2>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:end;">
+          <div class="form-group" style="flex:2; min-width:150px;">
+            <label>Name</label>
+            <input type="text" id="new-product-name" placeholder="Product name">
+          </div>
+          <div class="form-group" style="flex:1; min-width:100px;">
+            <label>Price</label>
+            <input type="number" id="new-product-price" placeholder="0.00" step="0.01">
+          </div>
+          <div class="form-group" style="flex:1; min-width:100px;">
+            <label>Category</label>
+            <input type="text" id="new-product-category" placeholder="Category">
+          </div>
+          <button class="btn-primary" onclick="addProduct()">Add</button>
+        </div>
+      </div>
+      <div id="products-list" class="products-grid">
+        <div class="loading">Loading products...</div>
+      </div>
+    </div>
+
+    <!-- Profile Section -->
+    <div id="section-profile" class="section">
+      <div class="card">
+        <h2>My Profile</h2>
+        <div id="profile-content">
+          <div class="loading">Loading profile...</div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Update Profile</h2>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="edit-fullName" placeholder="Full name">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="text" id="edit-email" placeholder="Email">
+        </div>
+        <div class="form-group">
+          <label>Bio</label>
+          <input type="text" id="edit-bio" placeholder="Bio">
+        </div>
+        <button class="btn-primary" onclick="updateProfile()">Save Changes</button>
+        <div id="profile-update-status" style="margin-top:0.5rem;"></div>
+      </div>
+    </div>
+
+    <!-- Service Status Section -->
+    <div id="section-status" class="section">
+      <div class="card">
+        <h2>Service Health</h2>
+        <p style="margin-bottom:1rem; color:#666; font-size:0.9rem;">Real-time health check of all microservices</p>
+        <div id="service-health" class="service-status">
+          <div class="loading">Checking services...</div>
+        </div>
+        <button class="btn-secondary" onclick="checkHealth()" style="margin-top:1rem;">Refresh</button>
+      </div>
+    </div>
+  </main>
+
+<script>
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:3000'
+  : `${window.location.protocol}//${window.location.hostname}:3000`;
+
+let currentUser = null;
+
+// ---- Auth ----
+
+async function login() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  const errorDiv = document.getElementById('login-error');
+  errorDiv.innerHTML = '';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorDiv.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+      return;
+    }
+
+    sessionStorage.setItem('token', data.token);
+    currentUser = data.user;
+    onLoginSuccess();
+  } catch (err) {
+    errorDiv.innerHTML = `<div class="alert alert-error">Cannot connect to API Gateway. Is it running?</div>`;
+  }
+}
+
+function onLoginSuccess() {
+  document.getElementById('section-login').classList.remove('active');
+  document.getElementById('main-nav').style.display = 'flex';
+  document.getElementById('user-display').textContent = `${currentUser.username} (${currentUser.role})`;
+  document.getElementById('logout-btn').style.display = 'inline-block';
+
+  if (currentUser.role === 'admin') {
+    document.getElementById('admin-panel').style.display = 'block';
+  }
+
+  showSection('products', document.querySelector('nav button'));
+  loadProducts();
+}
+
+async function logout() {
+  const token = sessionStorage.getItem('token');
+  try {
+    await fetch(`${API_BASE}/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+  } catch (e) { /* ignore */ }
+
+  sessionStorage.removeItem('token');
+  currentUser = null;
+  document.getElementById('main-nav').style.display = 'none';
+  document.getElementById('logout-btn').style.display = 'none';
+  document.getElementById('user-display').textContent = '';
+  document.getElementById('admin-panel').style.display = 'none';
+
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('section-login').classList.add('active');
+}
+
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+  };
+}
+
+// ---- Navigation ----
+
+function showSection(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`section-${name}`).classList.add('active');
+
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  if (name === 'products') loadProducts();
+  if (name === 'profile') loadProfile();
+  if (name === 'status') checkHealth();
+}
+
+// ---- Products ----
+
+async function loadProducts() {
+  const container = document.getElementById('products-list');
+  container.innerHTML = '<div class="loading">Loading products...</div>';
+
+  try {
+    const [productsRes, inventoryRes] = await Promise.all([
+      fetch(`${API_BASE}/api/products`),
+      fetch(`${API_BASE}/api/inventory`)
+    ]);
+
+    const products = await productsRes.json();
+    const inventoryList = await inventoryRes.json();
+
+    const inventoryMap = {};
+    inventoryList.forEach(item => { inventoryMap[item.productId] = item; });
+
+    container.innerHTML = products.map(p => {
+      const inv = inventoryMap[p.id];
+      const stock = inv ? inv.stock : null;
+      let stockHtml = '';
+      if (stock === null) {
+        stockHtml = '<span class="stock-badge stock-out">No data</span>';
+      } else if (stock === 0) {
+        stockHtml = '<span class="stock-badge stock-out">Out of stock</span>';
+      } else if (stock <= 5) {
+        stockHtml = `<span class="stock-badge stock-low">Low: ${stock} left</span>`;
+      } else {
+        stockHtml = `<span class="stock-badge stock-ok">In stock: ${stock}</span>`;
+      }
+
+      return `
+        <div class="product-card">
+          <div class="product-img">${getCategoryEmoji(p.category)}</div>
+          <div class="product-body">
+            <span class="category">${p.category}</span>
+            <h3>${p.name}</h3>
+            <p class="description">${p.description}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.5rem;">
+              <span class="price">$${p.price.toFixed(2)}</span>
+              ${stockHtml}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch (err) {
+    container.innerHTML = '<div class="alert alert-error">Failed to load products. Check if services are running.</div>';
+  }
+}
+
+function getCategoryEmoji(category) {
+  const map = {
+    'Electronics': '&#128266;',
+    'Footwear': '&#128095;',
+    'Kitchen': '&#9749;',
+    'Accessories': '&#127890;',
+    'Home Office': '&#128161;',
+    'Fitness': '&#129488;',
+    'General': '&#128230;'
+  };
+  return map[category] || '&#128230;';
+}
+
+async function addProduct() {
+  const name = document.getElementById('new-product-name').value;
+  const price = parseFloat(document.getElementById('new-product-price').value);
+  const category = document.getElementById('new-product-category').value || 'General';
+
+  if (!name || isNaN(price)) {
+    alert('Name and price are required');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/products`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ name, price, category, description: `${name} - added by ${currentUser.username}` })
+    });
+
+    if (res.ok) {
+      document.getElementById('new-product-name').value = '';
+      document.getElementById('new-product-price').value = '';
+      document.getElementById('new-product-category').value = '';
+      loadProducts();
+    } else {
+      const data = await res.json();
+      alert(data.error || 'Failed to add product');
+    }
+  } catch (err) {
+    alert('Failed to add product');
+  }
+}
+
+// ---- Profile ----
+
+async function loadProfile() {
+  const container = document.getElementById('profile-content');
+  container.innerHTML = '<div class="loading">Loading profile...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/profile/${currentUser.id}`, {
+      headers: authHeaders()
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      container.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+      return;
+    }
+
+    const profile = await res.json();
+
+    container.innerHTML = `
+      <div class="profile-field"><span class="label">Username</span><span class="value">${profile.username}</span></div>
+      <div class="profile-field"><span class="label">Full Name</span><span class="value">${profile.fullName}</span></div>
+      <div class="profile-field"><span class="label">Email</span><span class="value">${profile.email}</span></div>
+      <div class="profile-field"><span class="label">Bio</span><span class="value">${profile.bio}</span></div>
+    `;
+
+    document.getElementById('edit-fullName').value = profile.fullName;
+    document.getElementById('edit-email').value = profile.email;
+    document.getElementById('edit-bio').value = profile.bio;
+
+  } catch (err) {
+    container.innerHTML = '<div class="alert alert-error">Failed to load profile</div>';
+  }
+}
+
+async function updateProfile() {
+  const statusDiv = document.getElementById('profile-update-status');
+  statusDiv.innerHTML = '';
+
+  const body = {
+    fullName: document.getElementById('edit-fullName').value,
+    email: document.getElementById('edit-email').value,
+    bio: document.getElementById('edit-bio').value
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/api/profile/${currentUser.id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      statusDiv.innerHTML = '<div class="alert alert-success">Profile updated successfully!</div>';
+      loadProfile();
+    } else {
+      const data = await res.json();
+      statusDiv.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+    }
+  } catch (err) {
+    statusDiv.innerHTML = '<div class="alert alert-error">Failed to update profile</div>';
+  }
+}
+
+// ---- Service Health ----
+
+async function checkHealth() {
+  const container = document.getElementById('service-health');
+  const services = [
+    { name: 'API Gateway', url: `${API_BASE}/health` },
+    { name: 'Auth Service', url: `${API_BASE}/api/auth/health` },
+    { name: 'Profile Service', url: `${API_BASE}/api/profile/../health` },
+    { name: 'Product Service', url: `${API_BASE}/api/products/../health` },
+    { name: 'Inventory Service', url: `${API_BASE}/api/inventory/../health` }
+  ];
+
+  const results = await Promise.allSettled(
+    services.map(async s => {
+      try {
+        const res = await fetch(s.url, { signal: AbortSignal.timeout(3000) });
+        const data = await res.json();
+        return { ...s, healthy: data.status === 'healthy', data };
+      } catch {
+        return { ...s, healthy: false };
+      }
+    })
+  );
+
+  container.innerHTML = results.map(r => {
+    const s = r.value;
+    return `
+      <div class="status-item">
+        <span class="status-dot ${s.healthy ? 'healthy' : 'unhealthy'}"></span>
+        <span>${s.name}: ${s.healthy ? 'Healthy' : 'Unreachable'}</span>
+      </div>`;
+  }).join('');
+}
+
+// Enter key to login
+document.getElementById('password').addEventListener('keypress', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+
+</body>
+</html>
