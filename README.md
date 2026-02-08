@@ -1,6 +1,6 @@
 # Mini E-Commerce Microservices
 
-A simplified e-commerce system built with microservices architecture for learning purposes.
+A simplified e-commerce system built with microservices architecture.
 
 ## Architecture
 
